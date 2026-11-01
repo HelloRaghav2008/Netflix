@@ -1,0 +1,61 @@
+services:
+  server:
+    build:
+      context: .
+      dockerfile: server/Dockerfile
+    ports:
+      - "${SERVER_PORT:-8080}:8080"
+    environment:
+      NETFLIX_DATABASE_URL: jdbc:postgres://postgres:5432/${POSTGRES_DB:-netflix}
+      NETFLIX_DATABASE_USER: ${POSTGRES_USER:-netflix}
+      NETFLIX_DATABASE_PASSWORD: ${POSTGRES_PASSWORD:-netflix}
+      NETFLIX_REDIS_URI: redis://redis:6379
+      NETFLIX_JWT_SECRET: ${NETFLIX_JWT_SECRET}
+      NETFLIX_SMTP_HOST: mailpit
+      NETFLIX_SMTP_PORT: 1025
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+
+  postgres:
+    image: postgres:latest
+    container_name: shop-postgres
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-netflix}
+      POSTGRES_USER: ${POSTGRES_USER:-netflix}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-netflix}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB" ]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:latest
+    container_name: shop-redis
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  mailpit:
+    image: axllent/mailpit:v1.27
+    ports:
+      - "${MAILPIT_SMTP_PORT:-1025}:1025"
+      - "${MAILPIT_UI_PORT:-8025}:8025"
+
+volumes:
+  postgres_data:
+  redis_data:
