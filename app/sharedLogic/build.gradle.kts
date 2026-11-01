@@ -1,4 +1,5 @@
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import org.jetbrains.kotlin.gradle.plugin.mpp.apple.XCFramework
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
@@ -6,12 +7,16 @@ plugins {
 }
 
 kotlin {
+    val xcFrameworkName = "SharedLogic"
+    val xcf = XCFramework(xcFrameworkName)
     listOf(
         iosArm64(),
         iosSimulatorArm64()
     ).forEach { iosTarget ->
         iosTarget.binaries.framework {
-            baseName = "SharedLogic"
+            baseName = xcFrameworkName
+            binaryOption("bundleId", "com.raghav.${xcFrameworkName}")
+            xcf.add(this)
             isStatic = true
         }
     }

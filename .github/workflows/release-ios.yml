@@ -1,0 +1,89 @@
+name: Release iOS framework
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+env:
+  FRAMEWORK: SharedLogic
+  MODULE_DIR: app/sharedLogic
+  PACKAGE_REPO: HelloRaghav2008/NetflixPackage
+
+jobs:
+  release:
+    runs-on: macos-latest
+    steps:
+      - name: Checkout KMP repo
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Build XCFramework
+        run: |
+          chmod +x gradlew
+          ./gradlew :app:sharedLogic:assemble${FRAMEWORK}ReleaseXCFramework
+
+      - name: Zip and compute checksum
+        id: zip
+        working-directory: ${{ env.MODULE_DIR }}/build/XCFrameworks/release
+        run: |
+          zip -r ${FRAMEWORK}.xcframework.zip ${FRAMEWORK}.xcframework
+          echo "checksum=$(swift package compute-checksum ${FRAMEWORK}.xcframework.zip)" >> "$GITHUB_OUTPUT"
+
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "${{ github.ref_name }}" \
+            ${MODULE_DIR}/build/XCFrameworks/release/${FRAMEWORK}.xcframework.zip \
+            --title "${{ github.ref_name }}" \
+            --notes "iOS framework ${{ github.ref_name }}"
+
+      - name: Checkout Package repo
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ env.PACKAGE_REPO }}
+          token: ${{ secrets.PACKAGE_REPO_TOKEN }}
+          path: package-repo
+
+      - name: Update Package.swift and tag
+        working-directory: package-repo
+        run: |
+          VERSION="${{ github.ref_name }}"
+          URL="https://github.com/${{ github.repository }}/releases/download/${VERSION}/${FRAMEWORK}.xcframework.zip"
+          cat > Package.swift <<EOF
+          // swift-tools-version:5.3
+          import PackageDescription
+
+          let package = Package(
+              name: "${FRAMEWORK}",
+              platforms: [.iOS(.v15)],
+              products: [
+                  .library(name: "${FRAMEWORK}", targets: ["${FRAMEWORK}"])
+              ],
+              targets: [
+                  .binaryTarget(
+                      name: "${FRAMEWORK}",
+                      url: "${URL}",
+                      checksum: "${{ steps.zip.outputs.checksum }}"
+                  )
+              ]
+          )
+          EOF
+          git config user.name "github-actions"
+          git config user.email "github-actions@users.noreply.github.com"
+          git add Package.swift
+          git commit -m "Release ${VERSION}"
+          git tag "${VERSION}"
+          git push origin HEAD --tags
