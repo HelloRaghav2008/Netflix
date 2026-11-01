@@ -3,6 +3,7 @@ package com.raghav.netflix
 import com.raghav.netflix.config.ServerConfigLoader
 import com.raghav.netflix.di.appModule
 import com.raghav.netflix.plugins.configureHttp
+import com.raghav.netflix.routes.systemRoute
 import io.ktor.server.application.*
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*
@@ -27,8 +28,6 @@ fun Application.module() {
     }
     configureHttp()
     routing {
-        get("/") {
-            call.respondText(sayHello("Ktor"))
-        }
+        systemRoute(config)
     }
 }
