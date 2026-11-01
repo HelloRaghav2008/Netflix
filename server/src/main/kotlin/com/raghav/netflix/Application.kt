@@ -1,5 +1,6 @@
 package com.raghav.netflix
 
+import com.raghav.netflix.config.ServerConfigLoader
 import com.raghav.netflix.di.appModule
 import io.ktor.server.application.*
 import io.ktor.server.engine.*
@@ -15,9 +16,13 @@ fun main() {
 }
 
 fun Application.module() {
-    install(Koin){
+    val config = ServerConfigLoader.load(environment)
+    if (config.migrateOnStart) {
+        // Migrate
+    }
+    install(plugin = Koin) {
         slf4jLogger()
-        modules(appModule)
+        modules(appModule(config))
     }
     routing {
         get("/") {
