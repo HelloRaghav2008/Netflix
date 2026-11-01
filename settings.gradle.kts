@@ -17,6 +17,9 @@ pluginManagement {
 }
 
 dependencyResolutionManagement {
+    versionCatalogs {
+        create("ktorlibs").from("io.ktor:ktor-version-catalog:3.6.1")
+    }
     repositories {
         google {
             mavenContent {
