@@ -1,14 +1,14 @@
 package com.raghav.netflix
 
 import com.raghav.netflix.config.ServerConfigLoader
+import com.raghav.netflix.database.DatabaseMigrations
 import com.raghav.netflix.di.appModule
 import com.raghav.netflix.plugins.configureHttp
 import com.raghav.netflix.routes.systemRoute
 import io.ktor.server.application.*
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*
-import io.ktor.server.response.*
-import io.ktor.server.routing.*
+import io.ktor.server.routing.routing
 import org.koin.ktor.plugin.Koin
 import org.koin.logger.slf4jLogger
 
@@ -20,7 +20,7 @@ fun main() {
 fun Application.module() {
     val config = ServerConfigLoader.load(environment)
     if (config.migrateOnStart) {
-        // Migrate
+        DatabaseMigrations.migrate(config)
     }
     install(plugin = Koin) {
         slf4jLogger()
