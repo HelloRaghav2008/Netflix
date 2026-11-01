@@ -21,6 +21,13 @@ room3 = "3.1.0-alpha03"
 sqlite = "2.7.1"
 ksp = "2.3.12"
 serialization = "1.12.0"
+exposedCore = "1.6.0"
+postgresql = "42.7.14"
+lettuce = "7.9.0.RELEASE"
+flyway = "13.12.0"
+java-jwt = "4.6.2"
+argon2 = "2.12"
+testContainer = "1.21.4"
 
 [libraries]
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
@@ -61,6 +68,25 @@ androidx-room3-compiler = { module = "androidx.room3:room3-compiler", version.re
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "serialization" }
 # Ktor
 ktor-client-mock = { module = "io.ktor:ktor-client-mock", version.ref = "ktor" }
+# Exposed
+exposed-core = { module = "org.jetbrains.exposed:exposed-core", version.ref = "exposedCore" }
+exposed-jdbc = { module = "org.jetbrains.exposed:exposed-jdbc", version.ref = "exposedCore" }
+exposed-dao = { module = "org.jetbrains.exposed:exposed-dao", version.ref = "exposedCore" }
+exposed-java-time = { module = "org.jetbrains.exposed:exposed-java-time", version.ref = "exposedCore" }
+# PostgreSQL
+postgresql = { module = "org.postgresql:postgresql", version.ref = "postgresql" }
+# Flyway
+flyway = { module = "org.flywaydb:flyway-core", version.ref = "flyway" }
+flyway-postgres = { module = "org.flywaydb:flyway-database-postgresql", version.ref = "flyway" }
+# Lettuce(Redis)
+lettuce = { module = "io.lettuce:lettuce-core", version.ref = "lettuce" }
+# Argon2id
+argon2 = { module = "de.mkammerer:argon2-jvm", version.ref = "argon2" }
+# Java JWT
+java-jwt = { module = "com.auth0:java-jwt", version.ref = "java-jwt" }
+# Testcontainers
+testcontainers-junit = { module = "org.testcontainers:junit-jupiter", version.ref = "testContainer" }
+testcontainers-postgres = { module = "org.testcontainers:postgresql", version.ref = "testContainer" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }
